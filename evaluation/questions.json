@@ -1,0 +1,24 @@
+{
+  "description": "Prototype evaluation set for PrivacyLens. Questions are annotated by hand against the fictional Brightleaf Notes demo policy (data/sample_policy.txt). Supporting passages are identified by section-heading substrings so annotations survive changes to chunk size. 'expected_status' is the evidence status a careful reader would assign; 'answer_must_mention' lists alternative phrasings, at least one of which a correct answer must contain (case-insensitive).",
+  "policy": "data/sample_policy.txt",
+  "questions": [
+    {"id": "q01", "type": "practice", "question": "What personal information does Brightleaf collect when I create an account?", "supporting_sections": ["Information We Collect"], "expected_status": ["clearly_stated"], "answer_must_mention": ["email"]},
+    {"id": "q02", "type": "practice", "question": "Does this service collect my location?", "supporting_sections": ["Information We Collect"], "expected_status": ["clearly_stated", "unclear"], "answer_must_mention": ["location-based reminders", "precise location", "approximate location"]},
+    {"id": "q03", "type": "practice", "question": "Does the company share my information with advertisers?", "supporting_sections": ["How We Share"], "expected_status": ["clearly_stated"], "answer_must_mention": ["advertising partners", "advertisers"]},
+    {"id": "q04", "type": "practice", "question": "Can I delete my personal data?", "supporting_sections": ["Your Choices", "Data Retention"], "expected_status": ["clearly_stated"], "answer_must_mention": ["delete"]},
+    {"id": "q05", "type": "practice", "question": "How long is my content kept after I delete my account?", "supporting_sections": ["Data Retention"], "expected_status": ["clearly_stated"], "answer_must_mention": ["30 days"]},
+    {"id": "q06", "type": "practice", "question": "Can I opt out of personalized advertising?", "supporting_sections": ["Your Choices"], "expected_status": ["clearly_stated"], "answer_must_mention": ["Ad Preferences", "limit-ad-tracking", "opt out"]},
+    {"id": "q07", "type": "practice", "question": "Does the website use analytics cookies?", "supporting_sections": ["Cookies"], "expected_status": ["clearly_stated"], "answer_must_mention": ["analytics"]},
+    {"id": "q08", "type": "practice", "question": "Who are the service providers that receive my data?", "supporting_sections": ["How We Share"], "expected_status": ["clearly_stated"], "answer_must_mention": ["hosting", "payment", "vendors"]},
+    {"id": "q09", "type": "practice", "question": "How do I stop receiving marketing emails?", "supporting_sections": ["Your Choices"], "expected_status": ["clearly_stated"], "answer_must_mention": ["unsubscribe"]},
+    {"id": "q10", "type": "practice", "question": "Is my data transferred outside Canada?", "supporting_sections": ["International Transfers"], "expected_status": ["clearly_stated"], "answer_must_mention": ["United States"]},
+    {"id": "q11", "type": "ambiguous", "question": "How long does the company keep my usage information?", "supporting_sections": ["Data Retention"], "expected_status": ["unclear"], "answer_must_mention": ["as long as necessary", "no specific", "not specify", "doesn't specify", "does not give"]},
+    {"id": "q12", "type": "ambiguous", "question": "Does Brightleaf sell my personal information?", "supporting_sections": ["How We Share"], "expected_status": ["unclear"], "answer_must_mention": ["for money", "selling", "sell"]},
+    {"id": "q13", "type": "ambiguous", "question": "Can Brightleaf employees read my notes?", "supporting_sections": ["How We Use"], "expected_status": ["clearly_stated", "unclear"], "answer_must_mention": ["support", "comply", "law"]},
+    {"id": "q14", "type": "unanswerable", "question": "Does Brightleaf use my notes to train artificial intelligence models?", "supporting_sections": [], "expected_status": ["not_found"], "answer_must_mention": []},
+    {"id": "q15", "type": "unanswerable", "question": "Does the app collect biometric data such as fingerprints or face scans?", "supporting_sections": [], "expected_status": ["not_found"], "answer_must_mention": []},
+    {"id": "q16", "type": "unanswerable", "question": "Will Brightleaf notify me if there is a data breach?", "supporting_sections": [], "expected_status": ["not_found"], "answer_must_mention": []},
+    {"id": "q17", "type": "unanswerable", "question": "Does the company record my phone calls?", "supporting_sections": [], "expected_status": ["not_found"], "answer_must_mention": []},
+    {"id": "q18", "type": "out_of_scope", "question": "What is the best note-taking app to use instead?", "supporting_sections": [], "expected_status": ["not_found"], "answer_must_mention": []}
+  ]
+}

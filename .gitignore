@@ -1,0 +1,58 @@
+# ── Secrets & credentials ──────────────────────────────
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+credentials*.json
+.netrc
+.git-credentials
+
+# ── Python ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ── Virtual environments ───────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ── Generated / user data (never commit) ───────────────
+# FAISS indexes and embeddings built from user-submitted policies
+*.faiss
+*.index
+*.npy
+indexes/
+# Uploaded or fetched policies, session dumps, temp files
+uploads/
+user_data/
+tmp/
+temp/
+*.tmp
+# Evaluation outputs (may contain model answers)
+evaluation/results/
+results*.json
+# Logs
+*.log
+logs/
+# Model caches
+.cache/
+models_cache/
+
+# ── Editors & OS ───────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

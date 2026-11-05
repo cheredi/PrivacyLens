@@ -1,0 +1,87 @@
+# Brightleaf Notes Privacy Policy (Fictional Demonstration Document)
+
+DEMONSTRATION NOTICE: This privacy policy is entirely fictional. Brightleaf Notes is not a real company or product. This document was written for the PrivacyLens demo so the application can be explored without a live website. Any resemblance to a real policy is coincidental.
+
+Last updated: March 1, 2026
+
+This Privacy Policy explains how Brightleaf Notes Inc. ("Brightleaf", "we", "us") collects, uses, shares and retains personal information when you use the Brightleaf Notes mobile app, website and related services (together, the "Services"). It also describes the choices available to you. By using the Services you acknowledge the practices described in this policy.
+
+## 1. Information We Collect
+
+We collect information you provide directly, information collected automatically when you use the Services, and information we receive from other sources.
+
+Information you provide. When you create an account we collect your name, email address and password. If you subscribe to Brightleaf Premium, our payment processor collects your billing details; we receive only the last four digits of your card, the card type and your billing postal code. We also store the notes, checklists, images and voice memos you create ("User Content"), and any messages you send to our support team.
+
+Information collected automatically. When you use the Services we automatically collect device information such as your device model, operating system version, app version, language settings and a device identifier. We collect usage information, including the features you use, the pages and screens you view, the time and duration of your sessions, and crash reports. We collect your IP address, from which we may infer your approximate location (such as your city or region).
+
+Precise location. If you choose to enable location-based reminders, we collect the precise location of your device while the feature is active. You can turn this feature off at any time in your device settings or in the app. We do not collect precise location if the feature is disabled.
+
+Information from other sources. If you sign in using a third-party account such as an Apple or Google account, we receive your name and email address from that provider, as permitted by your settings with them. We may also receive information about the effectiveness of our marketing campaigns from advertising partners.
+
+## 2. Cookies and Similar Technologies
+
+Our website uses cookies, pixel tags and similar technologies. Some cookies are strictly necessary for the website to function, for example to keep you signed in. Others help us understand how visitors use the website (analytics cookies) or measure and personalise advertising (advertising cookies).
+
+We use third-party analytics providers to help us understand usage of the Services. These providers may collect information about your use of the Services over time, including your device identifier and IP address. You can manage non-essential cookies through the cookie settings link on our website or through your browser settings. Some features may not function properly if you disable cookies.
+
+## 3. How We Use Your Information
+
+We use personal information to provide, maintain and improve the Services; to sync your User Content across your devices; to process payments for Premium subscriptions; to respond to your support requests; to send you service-related messages, such as security alerts and changes to our terms; and to detect, investigate and prevent fraud, abuse and security incidents.
+
+We also use information to personalise your experience, for example by suggesting templates based on the features you use, and to analyse trends and measure how the Services are used. With your consent where required by law, we use information to send you marketing emails about new features and offers, and to show you personalised advertising in the free version of the app.
+
+We do not read the contents of your private notes except when you ask our support team for help with a specific note, when required to comply with the law, or when necessary to investigate a reported violation of our Terms of Service.
+
+## 4. How We Share Your Information
+
+We do not sell your name, email address or User Content for money. We may share personal information in the following circumstances.
+
+Service providers. We share information with vendors who perform services on our behalf, such as cloud hosting, payment processing, customer support tools, email delivery and analytics. These providers may use personal information only as needed to perform services for us.
+
+Advertising partners. In the free version of the app, we may share device identifiers, approximate location and usage information with advertising partners so that they can show you ads that may be more relevant to you and measure the performance of those ads. Depending on where you live, this may be considered "selling" or "sharing" personal information under applicable law. See "Your Choices and Rights" to learn how to opt out.
+
+Affiliates. We may share information with companies under common ownership or control with Brightleaf, who will use it in a manner consistent with this policy.
+
+Legal and safety reasons. We may disclose information if we believe in good faith that it is necessary to comply with a law, regulation, legal process or government request, or to protect the rights, property or safety of Brightleaf, our users or the public.
+
+Business transfers. If Brightleaf is involved in a merger, acquisition, financing, reorganisation, bankruptcy or sale of assets, personal information may be transferred as part of that transaction.
+
+With your consent. We may share information for other purposes with your consent, such as when you choose to share a note with another person or publish it with a public link.
+
+## 5. Data Retention
+
+We retain account information and User Content for as long as your account is active. If you delete your account, we will delete your User Content and account information from our active systems within 30 days. Copies may remain in our encrypted backups for up to 90 additional days before they are overwritten.
+
+We retain other information, including usage information and support messages, for as long as necessary to fulfil the purposes described in this policy, unless a longer retention period is required or permitted by law. We may retain de-identified or aggregated information indefinitely.
+
+## 6. Your Choices and Rights
+
+Account and content. You can review and update your name and email address at any time in Settings. You can export your notes from Settings > Export, and you can delete your account from Settings > Account > Delete account.
+
+Privacy requests. Depending on where you live, you may have the right to request access to, correction of, or deletion of your personal information, or to object to or restrict certain processing. To make a request, email privacy@brightleaf-notes.example or use the request form in the app. We may need to verify your identity before responding. We will not discriminate against you for exercising these rights.
+
+Marketing emails. You can opt out of marketing emails by using the unsubscribe link in any marketing email. You will still receive service-related messages.
+
+Personalised advertising. You can opt out of personalised advertising in the app under Settings > Privacy > Ad Preferences, or by enabling your device's limit-ad-tracking setting. If you opt out, you may still see ads, but they will be less tailored to you.
+
+Location. You can disable location-based reminders at any time in the app or in your device settings.
+
+## 7. Children's Privacy
+
+The Services are not directed to children under 13, and we do not knowingly collect personal information from children under 13. If we learn that we have collected such information, we will delete it.
+
+## 8. Security
+
+We use administrative, technical and physical safeguards designed to protect personal information, including encryption of User Content in transit and at rest. However, no method of transmission or storage is completely secure, and we cannot guarantee absolute security.
+
+## 9. International Transfers
+
+Brightleaf is based in Canada, and we may process and store information in Canada, the United States and other countries where our service providers operate. These countries may have data protection laws that differ from the laws of your country.
+
+## 10. Changes to This Policy
+
+We may update this policy from time to time. If we make material changes, we will notify you by email or through the app before the changes take effect. The "Last updated" date at the top shows when the policy was last revised.
+
+## 11. Contact Us
+
+If you have questions about this policy or our privacy practices, contact our privacy team at privacy@brightleaf-notes.example or write to: Brightleaf Notes Inc., Attn: Privacy Office, 100 Example Street, Toronto, Ontario, Canada.
