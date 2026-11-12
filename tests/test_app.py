@@ -87,3 +87,24 @@ def test_short_pasted_text_shows_friendly_error(monkeypatch):
     assert not at.exception
     assert at.session_state.policy is None
     assert any("too short" in e.value for e in at.error)
+
+
+def test_failed_ai_request_is_not_shown_as_not_found(monkeypatch):
+    """A rejected model name must read as a failure, never as 'the policy doesn't say'."""
+    from core.llm import LLMError
+
+    class FailingBackend:
+        def complete(self, messages):
+            raise LLMError("The AI model 'gemini-flash-latest' was not found. Check OPENAI_MODEL.")
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-not-real")
+    monkeypatch.setattr(LLMClient, "from_settings",
+                        classmethod(lambda cls, settings=None: LLMClient(FailingBackend(), max_retries=0)))
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    at.button(key="demo").click().run()
+    assert not at.exception
+    page = " ".join(m.value for m in at.markdown)
+    assert page.count("Analysis failed") == 5
+    assert ">Not found</span></div>" not in page  # no card header claims "Not found"
+    assert "was not found. Check OPENAI_MODEL" in page
+    assert any("Retry 5 failed categories" in b.label for b in at.button)

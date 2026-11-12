@@ -76,7 +76,7 @@ PrivacyLens/
 ├── prompts/system_prompts.py # grounding rules, injection-safe excerpt formatting
 ├── data/sample_policy.txt    # FICTIONAL demo policy
 ├── evaluation/               # annotated questions + metrics script
-└── tests/                    # 74 tests (extraction, chunking, retrieval, evidence, LLM, UI)
+└── tests/                    # 75 tests (extraction, chunking, retrieval, evidence, LLM, UI)
 ```
 
 ## Installation
@@ -189,7 +189,7 @@ python -m evaluation.evaluate --with-llm --json evaluation/results/run.json
 pytest
 ```
 
-74 tests cover: URL validation (localhost, private ranges, cloud metadata IP, IPv6-mapped loopback, non-standard ports, credentials in URLs), redirect re-validation, size/timeout/content-type limits, HTML cleanup, heading detection, deterministic chunk IDs, FAISS retrieval (with the real MiniLM model when available), citation validation, evidence downgrades, JSON retry logic, provider compatibility (rejected JSON mode or temperature, bad keys, unknown models, rate limits) through the real OpenAI client and a mock HTTP transport, isolation of failing overview categories, prompt-injection attempts in policy text, and end-to-end UI flows via Streamlit `AppTest` (demo without a key, demo + chat with a scripted LLM, reset, malformed input). Unit tests use a scripted LLM backend; nothing calls a real AI provider.
+75 tests cover: URL validation (localhost, private ranges, cloud metadata IP, IPv6-mapped loopback, non-standard ports, credentials in URLs), redirect re-validation, size/timeout/content-type limits, HTML cleanup, heading detection, deterministic chunk IDs, FAISS retrieval (with the real MiniLM model when available), citation validation, evidence downgrades, JSON retry logic, provider compatibility (rejected JSON mode or temperature, bad keys, unknown models, rate limits) through the real OpenAI client and a mock HTTP transport, isolation of failing overview categories, prompt-injection attempts in policy text, and end-to-end UI flows via Streamlit `AppTest` (demo without a key, demo + chat with a scripted LLM, reset, malformed input). Unit tests use a scripted LLM backend; nothing calls a real AI provider.
 
 ## Security
 

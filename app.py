@@ -93,6 +93,7 @@ h1, h2, h3, h4 { color: var(--pl-ink); letter-spacing: -0.01em; }
 .pl-pill.clearly_stated { color: var(--pl-clear); background: var(--pl-clear-bg); }
 .pl-pill.unclear { color: var(--pl-unclear); background: var(--pl-unclear-bg); }
 .pl-pill.not_found { color: var(--pl-missing); background: var(--pl-missing-bg); }
+.pl-pill.error { color: #9B2C2C; background: #FBE4E4; }
 
 .pl-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
 .pl-card-title { font-weight: 650; font-size: 1.08rem; color: var(--pl-ink); }
@@ -239,10 +240,12 @@ def render_citations(source_ids: list[str], policy: ProcessedPolicy) -> None:
 
 
 def render_category(cat: CategorySummary, policy: ProcessedPolicy) -> None:
+    # A failed AI request says nothing about the policy, so it must not look like "Not found".
+    status_pill = '<span class="pl-pill error">Analysis failed</span>' if cat.error else pill(cat.evidence_status)
     with st.container(border=True):
         st.markdown(
             f'<div class="pl-card-head"><div class="pl-card-title">{CATEGORY_ICONS.get(cat.category.value, "")} '
-            f"{esc(cat.category.value)}</div>{pill(cat.evidence_status)}</div>"
+            f"{esc(cat.category.value)}</div>{status_pill}</div>"
             f'<div class="pl-card-q">{esc(CATEGORY_QUESTIONS.get(cat.category.value))}</div>'
             f'<div class="pl-summary">{esc(cat.summary)}</div>',
             unsafe_allow_html=True,
