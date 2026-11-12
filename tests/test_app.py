@@ -82,8 +82,9 @@ def test_short_pasted_text_shows_friendly_error(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     at = AppTest.from_file(APP, default_timeout=60).run()
     at.radio[0].set_value("Paste policy text").run()
-    at.text_area[0].input("We collect stuff.").run()
-    at.button(key="analyze_text").click().run()
+    at.text_area[0].input("We collect stuff.")
+    at.button(key="analyze_text").click()  # a form sends the typed text together with the click
+    at.run()
     assert not at.exception
     assert at.session_state.policy is None
     assert any("too short" in e.value for e in at.error)
@@ -108,3 +109,15 @@ def test_failed_ai_request_is_not_shown_as_not_found(monkeypatch):
     assert ">Not found</span></div>" not in page  # no card header claims "Not found"
     assert "was not found. Check OPENAI_MODEL" in page
     assert any("Retry 5 failed categories" in b.label for b in at.button)
+
+
+def test_url_form_submits_typed_value(monkeypatch):
+    """The typed URL reaches the pipeline (blocked address -> friendly SSRF error, no crash)."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    at = AppTest.from_file(APP, default_timeout=60).run()
+    at.text_input[0].input("http://localhost/privacy")
+    at.button(key="analyze_url").click()
+    at.run()
+    assert not at.exception
+    assert at.session_state.policy is None
+    assert any("Local and internal addresses" in e.value for e in at.error)

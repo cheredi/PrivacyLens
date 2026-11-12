@@ -78,7 +78,7 @@ def test_rejected_temperature_then_json_mode():
     [
         (400, "Something else entirely is wrong", "rejected the request"),
         (401, "bad key", "rejected the API key"),
-        (404, "model not found", "was not found"),
+        (404, "model not found", "answered 'not found'"),
         (429, "quota exceeded", "rate-limited"),
     ],
 )
@@ -86,3 +86,23 @@ def test_provider_errors_become_friendly_llm_errors(status, message, expected):
     backend, _ = _backend(lambda body: _error(status, message))
     with pytest.raises(LLMError, match=expected):
         backend.complete([{"role": "user", "content": "q"}])
+
+
+def test_not_found_names_both_model_and_endpoint():
+    backend, _ = _backend(lambda body: _error(404, "models/gemini-x is not found"))
+    with pytest.raises(LLMError) as info:
+        backend.complete([{"role": "user", "content": "q"}])
+    message = str(info.value)
+    assert "gemini" not in backend.model  # model name comes from settings, not the provider message
+    assert "'m'" in message and "https://llm.test/v1" in message
+    assert "OPENAI_MODEL and OPENAI_BASE_URL" in message
+
+
+def test_pasted_settings_are_cleaned(monkeypatch):
+    from config import Settings
+
+    monkeypatch.setenv("OPENAI_BASE_URL", '  "https://generativelanguage.googleapis.com/v1beta/openai/" ')
+    monkeypatch.setenv("OPENAI_MODEL", " gemini-3.5-flash-lite\n")
+    s = Settings()
+    assert s.openai_base_url == "https://generativelanguage.googleapis.com/v1beta/openai/"
+    assert s.openai_model == "gemini-3.5-flash-lite"

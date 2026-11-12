@@ -24,14 +24,18 @@ SAMPLE_POLICY_PATH = DATA_DIR / "sample_policy.txt"
 
 def _read_setting(name: str, default: str | None = None) -> str | None:
     """Read a setting from the environment, falling back to Streamlit secrets."""
-    value = os.environ.get(name)
+    # Values pasted into .env or Streamlit Secrets often carry stray spaces or quotes, which
+    # silently break URLs and model names, so they are cleaned here.
+    value = (os.environ.get(name) or "").strip().strip('"\'').strip()
     if value:
         return value
     try:  # Streamlit secrets are only available inside a Streamlit runtime.
         import streamlit as st
 
         if name in st.secrets:
-            return str(st.secrets[name])
+            secret = str(st.secrets[name]).strip().strip('"\'').strip()
+            if secret:
+                return secret
     except Exception:  # noqa: BLE001 - secrets file missing or not in Streamlit
         pass
     return default

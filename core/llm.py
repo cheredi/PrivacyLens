@@ -41,6 +41,7 @@ class OpenAIBackend:
             max_retries=2,  # network-level retries (rate limits, 5xx)
         )
         self.model = settings.openai_model
+        self.base_url = settings.openai_base_url or "https://api.openai.com/v1"
         self._temperature = float(settings.openai_temperature) if settings.openai_temperature else None
         # JSON mode is requested by default. OpenAI-compatible providers (Gemini, Groq, local
         # servers) differ in what they accept, so an option a provider rejects is dropped and
@@ -80,7 +81,12 @@ class OpenAIBackend:
             except openai.AuthenticationError as exc:
                 raise LLMError("The AI provider rejected the API key. Check OPENAI_API_KEY.") from exc
             except openai.NotFoundError as exc:
-                raise LLMError(f"The AI model '{self.model}' was not found. Check OPENAI_MODEL.") from exc
+                # A 404 can mean a wrong model name OR a wrong endpoint address; say which values were used.
+                detail = str(getattr(exc, "message", "") or exc)[:200]
+                raise LLMError(
+                    f"The AI service answered 'not found' for model '{self.model}' at {self.base_url}. "
+                    f"Check OPENAI_MODEL and OPENAI_BASE_URL. Provider message: {detail}"
+                ) from exc
             except openai.RateLimitError as exc:
                 raise LLMError("The AI service is rate-limited or out of quota. Please try again shortly.") from exc
             except openai.APITimeoutError as exc:

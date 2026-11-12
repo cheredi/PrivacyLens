@@ -125,6 +125,9 @@ h1, h2, h3, h4 { color: var(--pl-ink); letter-spacing: -0.01em; }
 .stTabs [data-baseweb="tab-list"] { gap: 6px; }
 .stTabs [data-baseweb="tab"] { font-weight: 600; }
 .stTextInput input, .stTextArea textarea { border-radius: 10px; background: var(--pl-surface); }
+/* Streamlit's "Press Enter to apply" hint overlaps long URLs; the button and caption already explain what to do. */
+[data-testid="InputInstructions"] { display: none !important; }
+.stButton > button[kind="primaryFormSubmit"], [data-testid="stFormSubmitButton"] button[kind="primary"] { background: var(--pl-accent); border-color: var(--pl-accent); border-radius: 10px; font-weight: 550; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -319,16 +322,22 @@ to the original wording so you can check it yourself. It doesn't rate companies 
     with right:
         with st.container(border=True):
             mode = st.radio("Input", ["Website URL", "Paste policy text"], horizontal=True, label_visibility="collapsed")
+            # Forms send the typed value together with the click, and Enter submits the URL form.
             if mode == "Website URL":
-                url = st.text_input("Privacy policy URL", placeholder="https://example.com/privacy")
-                st.caption("Public http(s) pages only. Pages that need JavaScript to show text may not work — paste the text instead.")
-                if st.button("Analyze Policy", type="primary", width="stretch", key="analyze_url"):
+                with st.form("url_form", border=False):
+                    url = st.text_input("Privacy policy URL", placeholder="https://example.com/privacy")
+                    st.caption("Public http(s) pages only. Pages that need JavaScript to show text may not work — "
+                               "paste the text instead.")
+                    submitted = st.form_submit_button("Analyze Policy", type="primary", width="stretch", key="analyze_url")
+                if submitted:
                     run_pipeline("url", url)
                     st.rerun()
             else:
-                text = st.text_area("Privacy policy text", height=230, placeholder="Paste the full privacy policy here…")
-                st.caption(f"{len(text.split()):,} words")
-                if st.button("Analyze Policy", type="primary", width="stretch", key="analyze_text"):
+                with st.form("text_form", border=False, enter_to_submit=False):
+                    text = st.text_area("Privacy policy text", height=230, placeholder="Paste the full privacy policy here…")
+                    st.caption("Paste the whole policy, then press Analyze Policy.")
+                    submitted = st.form_submit_button("Analyze Policy", type="primary", width="stretch", key="analyze_text")
+                if submitted:
                     run_pipeline("text", text)
                     st.rerun()
             st.divider()
