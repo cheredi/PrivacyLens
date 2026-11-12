@@ -42,32 +42,52 @@ class OpenAIBackend:
         )
         self.model = settings.openai_model
         self._temperature = float(settings.openai_temperature) if settings.openai_temperature else None
+        # JSON mode is requested by default. OpenAI-compatible providers (Gemini, Groq, local
+        # servers) differ in what they accept, so an option a provider rejects is dropped and
+        # remembered. Output is still parsed and validated against the Pydantic schemas.
+        self._json_mode = True
+
+    def _request_kwargs(self, messages: list[dict[str, str]]) -> dict:
+        kwargs: dict = {"model": self.model, "messages": messages}
+        if self._json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        if self._temperature is not None:
+            kwargs["temperature"] = self._temperature
+        return kwargs
+
+    def _drop_rejected_option(self, error_text: str) -> bool:
+        """Turn off an optional parameter the provider rejected. Returns True if one was dropped."""
+        text = error_text.lower()
+        if self._temperature is not None and "temperature" in text:
+            self._temperature = None
+            return True
+        if self._json_mode and any(k in text for k in ("response_format", "json_object", "json mode", "response format")):
+            self._json_mode = False
+            return True
+        return False
 
     def complete(self, messages: list[dict[str, str]]) -> str:
         import openai
 
-        kwargs: dict = {"model": self.model, "messages": messages, "response_format": {"type": "json_object"}}
-        if self._temperature is not None:
-            kwargs["temperature"] = self._temperature
-        try:
-            resp = self._client.chat.completions.create(**kwargs)
-        except openai.BadRequestError as exc:
-            # Some models reject a custom temperature; retry once without it.
-            if "temperature" in str(exc).lower() and "temperature" in kwargs:
-                kwargs.pop("temperature")
-                self._temperature = None
-                resp = self._client.chat.completions.create(**kwargs)
-            else:
+        for _ in range(3):  # at most: original request + two option adjustments
+            try:
+                resp = self._client.chat.completions.create(**self._request_kwargs(messages))
+                return resp.choices[0].message.content or ""
+            except openai.BadRequestError as exc:
+                if self._drop_rejected_option(str(exc)):
+                    continue
                 raise LLMError(f"The AI service rejected the request: {exc.message}") from exc
-        except openai.AuthenticationError as exc:
-            raise LLMError("The OpenAI API key was rejected. Check OPENAI_API_KEY.") from exc
-        except openai.RateLimitError as exc:
-            raise LLMError("The AI service is rate-limited or out of quota. Please try again shortly.") from exc
-        except openai.APITimeoutError as exc:
-            raise LLMError("The AI service timed out. Please try again.") from exc
-        except openai.APIError as exc:
-            raise LLMError(f"The AI service returned an error: {exc}") from exc
-        return resp.choices[0].message.content or ""
+            except openai.AuthenticationError as exc:
+                raise LLMError("The AI provider rejected the API key. Check OPENAI_API_KEY.") from exc
+            except openai.NotFoundError as exc:
+                raise LLMError(f"The AI model '{self.model}' was not found. Check OPENAI_MODEL.") from exc
+            except openai.RateLimitError as exc:
+                raise LLMError("The AI service is rate-limited or out of quota. Please try again shortly.") from exc
+            except openai.APITimeoutError as exc:
+                raise LLMError("The AI service timed out. Please try again.") from exc
+            except openai.APIError as exc:
+                raise LLMError(f"The AI service returned an error: {exc}") from exc
+        raise LLMError("The AI service rejected the request settings.")
 
 
 def _extract_json(raw: str) -> object:

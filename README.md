@@ -76,7 +76,7 @@ PrivacyLens/
 ├── prompts/system_prompts.py # grounding rules, injection-safe excerpt formatting
 ├── data/sample_policy.txt    # FICTIONAL demo policy
 ├── evaluation/               # annotated questions + metrics script
-└── tests/                    # 67 tests (extraction, chunking, retrieval, evidence, pipeline, UI)
+└── tests/                    # 74 tests (extraction, chunking, retrieval, evidence, LLM, UI)
 ```
 
 ## Installation
@@ -106,6 +106,18 @@ cp .env.example .env
 | `OPENAI_BASE_URL` | No | OpenAI | OpenAI-compatible endpoint |
 | `OPENAI_TEMPERATURE` | No | `0` | Leave empty for models that reject a temperature |
 | `EMBEDDING_MODEL` | No | `sentence-transformers/all-MiniLM-L6-v2` | HF id or local path |
+
+### Using a free provider (Gemini or Groq)
+
+PrivacyLens works with any OpenAI-compatible endpoint, so you can run it without an OpenAI account. For Google Gemini, create a key in [Google AI Studio](https://aistudio.google.com/apikey) and set:
+
+```bash
+OPENAI_API_KEY=<your Gemini key>
+OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+OPENAI_MODEL=<a current Gemini Flash-Lite model id>
+```
+
+Analyzing a policy makes five model calls (one per category) and each question makes one, so choose a model whose free-tier limits allow that — Flash-Lite models usually have the most generous free quotas. Check your project's live limits in AI Studio. If a provider rejects JSON mode or a custom temperature, PrivacyLens drops that option automatically; responses are still validated against the Pydantic schemas.
 
 **Without an API key** the app still runs: you can submit or load the demo policy, and it will be cleaned, chunked, embedded and indexed so you can browse sections in the Source viewer. The overview and Q&A show setup instructions instead of pretending to work. Nothing falls back to keyword-matched canned answers.
 
@@ -177,7 +189,7 @@ python -m evaluation.evaluate --with-llm --json evaluation/results/run.json
 pytest
 ```
 
-67 tests cover: URL validation (localhost, private ranges, cloud metadata IP, IPv6-mapped loopback, non-standard ports, credentials in URLs), redirect re-validation, size/timeout/content-type limits, HTML cleanup, heading detection, deterministic chunk IDs, FAISS retrieval (with the real MiniLM model when available), citation validation, evidence downgrades, JSON retry logic, isolation of failing overview categories, prompt-injection attempts in policy text, and end-to-end UI flows via Streamlit `AppTest` (demo without a key, demo + chat with a scripted LLM, reset, malformed input). Unit tests use a scripted LLM backend; nothing calls the OpenAI API.
+74 tests cover: URL validation (localhost, private ranges, cloud metadata IP, IPv6-mapped loopback, non-standard ports, credentials in URLs), redirect re-validation, size/timeout/content-type limits, HTML cleanup, heading detection, deterministic chunk IDs, FAISS retrieval (with the real MiniLM model when available), citation validation, evidence downgrades, JSON retry logic, provider compatibility (rejected JSON mode or temperature, bad keys, unknown models, rate limits) through the real OpenAI client and a mock HTTP transport, isolation of failing overview categories, prompt-injection attempts in policy text, and end-to-end UI flows via Streamlit `AppTest` (demo without a key, demo + chat with a scripted LLM, reset, malformed input). Unit tests use a scripted LLM backend; nothing calls a real AI provider.
 
 ## Security
 
