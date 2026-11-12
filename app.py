@@ -23,7 +23,7 @@ from models.schemas import CategorySummary, EvidenceStatus, PolicyOverview, QAAn
 logging.basicConfig(level=logging.INFO)
 settings = get_settings()
 
-st.set_page_config(page_title="PrivacyLens", page_icon="🛡️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="PrivacyLens", page_icon=":material/shield:", layout="wide", initial_sidebar_state="collapsed")
 
 SUGGESTED_QUESTIONS = [
     "Does this company share my information with advertisers?",
@@ -33,13 +33,6 @@ SUGGESTED_QUESTIONS = [
     "Can I opt out of personalized advertising?",
     "What information does the company collect about me?",
 ]
-CATEGORY_ICONS = {
-    "Data Collection": "📥",
-    "Data Usage": "⚙️",
-    "Data Sharing": "🔗",
-    "Data Retention": "🗄️",
-    "User Rights and Choices": "🧭",
-}
 CATEGORY_QUESTIONS = {
     "Data Collection": "What personal information does the service say it collects?",
     "Data Usage": "Why does the service say it uses information?",
@@ -127,6 +120,9 @@ h1, h2, h3, h4 { color: var(--pl-ink); letter-spacing: -0.01em; }
 .stTextInput input, .stTextArea textarea { border-radius: 10px; background: var(--pl-surface); }
 /* Streamlit's "Press Enter to apply" hint overlaps long URLs; the button and caption already explain what to do. */
 [data-testid="InputInstructions"] { display: none !important; }
+/* Quiet, on-brand chat avatars instead of Streamlit's default red/orange ones. */
+[data-testid="stChatMessageAvatarCustom"], [data-testid="stChatMessage"] [data-testid="stIconMaterial"] { color: var(--pl-accent); }
+[data-testid="stChatMessage"] > div:first-child { background: var(--pl-accent-soft); border-radius: 8px; }
 .stButton > button[kind="primaryFormSubmit"], [data-testid="stFormSubmitButton"] button[kind="primary"] { background: var(--pl-accent); border-color: var(--pl-accent); border-radius: 10px; font-weight: 550; }
 </style>
 """,
@@ -218,8 +214,7 @@ def run_pipeline(source: str, value: str) -> None:
 def render_source(chunk: Chunk, policy: ProcessedPolicy) -> None:
     heading = esc(chunk.heading) if chunk.heading else "<i>No section heading</i>"
     st.markdown(
-        f'<div class="pl-source-head">Source {chunk.source_number} — {heading}</div>'
-        f'<div class="pl-source-id">ID: {esc(chunk.id)} · ~{chunk.approx_tokens} tokens</div>',
+        f'<div class="pl-source-head">Source {chunk.source_number} — {heading}</div>',
         unsafe_allow_html=True,
     )
     st.markdown(f'<div class="pl-excerpt">{html.escape(chunk.text)}</div>', unsafe_allow_html=True)
@@ -247,8 +242,7 @@ def render_category(cat: CategorySummary, policy: ProcessedPolicy) -> None:
     status_pill = '<span class="pl-pill error">Analysis failed</span>' if cat.error else pill(cat.evidence_status)
     with st.container(border=True):
         st.markdown(
-            f'<div class="pl-card-head"><div class="pl-card-title">{CATEGORY_ICONS.get(cat.category.value, "")} '
-            f"{esc(cat.category.value)}</div>{status_pill}</div>"
+            f'<div class="pl-card-head"><div class="pl-card-title">{esc(cat.category.value)}</div>{status_pill}</div>'
             f'<div class="pl-card-q">{esc(CATEGORY_QUESTIONS.get(cat.category.value))}</div>'
             f'<div class="pl-summary">{esc(cat.summary)}</div>',
             unsafe_allow_html=True,
@@ -350,7 +344,6 @@ to the original wording so you can check it yourself. It doesn't rate companies 
         st.info(
             "**AI features are off.** Set `OPENAI_API_KEY` (see README) to enable the category overview and Q&A. "
             "Without it you can still process a policy and browse its indexed sections.",
-            icon="🔑",
         )
 
 
@@ -378,7 +371,7 @@ def render_policy_bar(policy: ProcessedPolicy) -> None:
 def render_overview_tab(policy: ProcessedPolicy, overview: PolicyOverview | None, llm_reason: str | None) -> None:
     if overview is None:
         if llm_reason:
-            st.info(f"{llm_reason}\n\nThe policy has been indexed — open **Source viewer** to browse its sections.", icon="🔑")
+            st.info(f"{llm_reason}\n\nThe policy has been indexed — open **Source viewer** to browse its sections.")
         else:
             st.warning("The overview hasn't been generated yet.")
             if st.button("Generate overview", type="primary", key="gen_overview"):
@@ -413,7 +406,7 @@ def render_overview_tab(policy: ProcessedPolicy, overview: PolicyOverview | None
 
 def render_chat_tab(policy: ProcessedPolicy, llm_reason: str | None) -> None:
     if llm_reason:
-        st.info(f"{llm_reason}", icon="🔑")
+        st.info(f"{llm_reason}")
         return
 
     st.markdown('<div class="pl-meta">Answers use only retrieved excerpts from this policy. '
@@ -426,7 +419,7 @@ def render_chat_tab(policy: ProcessedPolicy, llm_reason: str | None) -> None:
             st.session_state.pending_question = q
 
     for i, msg in enumerate(st.session_state.chat):
-        with st.chat_message(msg["role"], avatar="🙂" if msg["role"] == "user" else "🛡️"):
+        with st.chat_message(msg["role"], avatar=":material/person:" if msg["role"] == "user" else ":material/shield:"):
             if msg["role"] == "user":
                 st.markdown(f"<div class='pl-answer'>{esc(msg['content'])}</div>", unsafe_allow_html=True)
             elif msg.get("error"):
@@ -485,7 +478,7 @@ def main() -> None:
     init_state()
     render_header()
     if st.session_state.flash_error:
-        st.error(st.session_state.flash_error, icon="⚠️")
+        st.error(st.session_state.flash_error)
         st.session_state.flash_error = None
     if st.session_state.policy is None:
         render_landing()

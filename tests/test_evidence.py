@@ -94,3 +94,28 @@ def test_not_found_answer_passes_through():
     ans = verify_answer(draft, [SHARE])
     assert ans.evidence_status == EvidenceStatus.NOT_FOUND
     assert ans.verification_note is None
+
+
+def test_internal_ids_are_removed_from_model_prose():
+    from core.evidence import strip_source_ids
+
+    assert strip_source_ids("It collects IP address and usage data [chunk_5].") == "It collects IP address and usage data."
+    assert strip_source_ids("Data may be shared (see chunk_3, chunk_4) with vendors.") == "Data may be shared with vendors."
+    assert strip_source_ids("Shared with partners [chunk_2; chunk_7]") == "Shared with partners"
+    assert strip_source_ids("As chunk_12 explains, deletion is possible.") == "As Source 12 explains, deletion is possible."
+    assert strip_source_ids(None) is None
+
+
+def test_ids_in_prose_do_not_reach_the_display():
+    draft = CategoryDraft.model_validate({
+        "category": "Data Retention", "summary": "Retention is described [chunk_4].",
+        "evidence_status": "clearly_stated", "limitations": "No period for logs (chunk_4).",
+        "findings": [_finding("User Content is deleted within 30 days after account deletion [chunk_4].")],
+    })
+    result = verify_category(draft, "Data Retention", [RET])
+    shown = " ".join([result.summary, result.limitations, result.findings[0].finding])
+    assert "chunk_" not in shown
+    assert result.findings[0].source_ids == ["chunk_4"]  # the citation itself is kept
+    ans = verify_answer(QADraft(answer="Yes [chunk_2].", evidence_status="unclear", source_ids=["chunk_2"],
+                                limitations="See chunk_2."), [SHARE])
+    assert ans.answer == "Yes." and ans.limitations == "See Source 2." and ans.source_ids == ["chunk_2"]

@@ -60,3 +60,8 @@ def test_long_section_is_split_with_overlap(settings):
     assert all(c.approx_tokens <= settings.chunk_target_tokens * 1.4 for c in chunks)
     # The second chunk starts with overlap carried from the first.
     assert chunks[1].text.startswith("…")
+
+
+def test_decorative_emojis_removed_but_meaningful_symbols_kept():
+    assert clean_text("🍪 We use cookies 🔒 to keep you safe 👍🏽") == "We use cookies to keep you safe"
+    assert clean_text("Sell data: ❌  Share with vendors: ✅") == "Sell data: ❌ Share with vendors: ✅"

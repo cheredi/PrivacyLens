@@ -121,3 +121,36 @@ def test_url_form_submits_typed_value(monkeypatch):
     assert not at.exception
     assert at.session_state.policy is None
     assert any("Local and internal addresses" in e.value for e in at.error)
+
+
+def test_no_internal_ids_tokens_or_emojis_on_screen(monkeypatch):
+    """Users see 'Source N', never chunk IDs, token counts or decorative emojis — in all three tabs."""
+    import re as _re
+
+    class ChattyBackend:
+        def complete(self, messages):
+            content = messages[1]["content"]
+            ids = re.findall(r'<excerpt id="(chunk_\d+)"', content)
+            cat = re.search(r"Category: (.+)", content)
+            if cat:
+                return json.dumps({"category": cat.group(1), "summary": f"Summary [{ids[0]}].",
+                                   "evidence_status": "clearly_stated",
+                                   "findings": [{"category": cat.group(1),
+                                                 "finding": f"The policy describes information practices [{ids[0]}].",
+                                                 "plain_language_explanation": "Plain.", "evidence_status": "unclear",
+                                                 "source_ids": ids[:1]}]})
+            return json.dumps({"answer": f"Advertising partners may receive identifiers ({ids[0]}).",
+                               "evidence_status": "clearly_stated", "source_ids": ids[:1]})
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-not-real")
+    monkeypatch.setattr(LLMClient, "from_settings",
+                        classmethod(lambda cls, settings=None: LLMClient(ChattyBackend(), max_retries=0)))
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    at.button(key="demo").click().run()
+    at.button(key="suggest_0").click().run()
+    assert not at.exception
+    text = " ".join(m.value for m in at.markdown) + " ".join(c.value for c in at.code)
+    assert "chunk_" not in text
+    assert "tokens" not in text and "ID:" not in text
+    assert not _re.search("[\U0001F300-\U0001FAFF⚙\U0001F5C4]", text)
+    assert "Source 1" in " ".join(b.label for b in at.button) or "Source" in text

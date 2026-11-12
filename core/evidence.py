@@ -23,6 +23,23 @@ from models.schemas import CategoryDraft, CategorySummary, EvidenceStatus, Findi
 
 SUPPORT_THRESHOLD = 0.25
 
+# Internal chunk IDs belong in source_ids only. Models sometimes also write them into prose,
+# e.g. "...website usage data [chunk_5]." or "(see chunk_3, chunk_4)".
+_ID_GROUP_RE = re.compile(
+    r"\s*[\[(]\s*(?:(?:see|sources?|excerpts?|ids?)\s*:?\s*)?chunk_\d+(?:\s*(?:,|;|and|&)\s*chunk_\d+)*\s*[\])]",
+    re.IGNORECASE,
+)
+_BARE_ID_RE = re.compile(r"\bchunk_(\d+)\b", re.IGNORECASE)
+
+
+def strip_source_ids(text: str | None) -> str | None:
+    """Remove bracketed chunk IDs from model prose; turn any bare ID into a readable "Source N"."""
+    if not text:
+        return text
+    text = _ID_GROUP_RE.sub("", text)
+    text = _BARE_ID_RE.sub(lambda m: f"Source {m.group(1)}", text)
+    return re.sub(r"\s+([.,;:!?])", r"\1", text).strip()
+
 _STOPWORDS = set(
     """a about above after again against all also am an and any are as at be because been before being below between
     both but by can could did do does doing down during each either few for from further had has have having he her
@@ -83,6 +100,10 @@ def _texts(ids: list[str], lookup: dict[str, Chunk]) -> list[str]:
 
 def verify_finding(finding: Finding, allowed_ids: set[str], lookup: dict[str, Chunk]) -> Finding | None:
     """Return a verified copy of the finding, or None if it is unsupported."""
+    finding = finding.model_copy(update={
+        "finding": strip_source_ids(finding.finding),
+        "plain_language_explanation": strip_source_ids(finding.plain_language_explanation),
+    })
     valid, rejected = validate_source_ids(finding.source_ids, allowed_ids)
     notes: list[str] = []
     status = finding.evidence_status
@@ -126,15 +147,17 @@ def verify_category(draft: CategoryDraft, expected_category: str, retrieved: lis
 
     return CategorySummary(
         category=expected_category,
-        summary=draft.summary,
+        summary=strip_source_ids(draft.summary),
         evidence_status=status,
         findings=findings,
-        limitations=limitations,
+        limitations=strip_source_ids(limitations),
         retrieved_ids=[c.id for c in retrieved],
     )
 
 
 def verify_answer(draft: QADraft, retrieved: list[Chunk]) -> QAAnswer:
+    draft = draft.model_copy(update={"answer": strip_source_ids(draft.answer),
+                                     "limitations": strip_source_ids(draft.limitations)})
     lookup = {c.id: c for c in retrieved}
     valid, rejected = validate_source_ids(draft.source_ids, lookup.keys())
     status = draft.evidence_status

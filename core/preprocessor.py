@@ -54,6 +54,9 @@ def approx_tokens(text: str) -> int:
 # Cleaning & validation
 # ---------------------------------------------------------------------------
 
+# Decorative emoji pictures (faces, objects, flags) carry no policy meaning. Symbols such as
+# ✅ / ❌ (U+2705, U+274C) are kept because some policies use them in tables to mean yes/no.
+_EMOJI_RE = re.compile("[\U0001F000-\U0001FAFF\uFE0F\u20E3]")
 _CONTROL_RE = re.compile(r"[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f​-‏  ﻿]")
 
 
@@ -61,6 +64,7 @@ def clean_text(text: str) -> str:
     text = unicodedata.normalize("NFKC", text or "")
     text = text.replace("\r\n", "\n").replace("\r", "\n").replace("\t", " ")
     text = _CONTROL_RE.sub("", text)
+    text = _EMOJI_RE.sub("", text)
     lines = [re.sub(r"[  ]+", " ", ln).strip() for ln in text.split("\n")]
     out: list[str] = []
     blank = 0
