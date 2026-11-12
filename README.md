@@ -76,7 +76,7 @@ PrivacyLens/
 ├── prompts/system_prompts.py # grounding rules, injection-safe excerpt formatting
 ├── data/sample_policy.txt    # FICTIONAL demo policy
 ├── evaluation/               # annotated questions + metrics script
-└── tests/                    # 82 tests (extraction, chunking, retrieval, evidence, LLM, UI)
+└── tests/                    # 86 tests (extraction, chunking, retrieval, evidence, LLM, UI)
 ```
 
 ## Installation
@@ -144,7 +144,7 @@ Open http://localhost:8501 and either paste a URL / policy text or click **Try t
 5. **Indexing.** Passage vectors go into a FAISS inner-product index; a chunk's relevance is its best passage score.
 6. **Retrieval.** Q&A retrieves the top 5 chunks. Short or referential follow-ups ("what about advertisers?") also search with the previous question appended. Each overview category runs 2–3 targeted queries and keeps the top 6 chunks.
 7. **Grounded generation.** Only the question and retrieved excerpts are sent to the model, wrapped in `<excerpt id=…>` tags. A reusable system prompt requires excerpt-only claims, preserved qualifiers ("may", "subject to"), plain language, no recommendations, and honest "not found" answers. Any `<excerpt>`-like tags inside policy text are defused so content can't escape its delimiter, and the model is told excerpts are untrusted data whose instructions must be ignored.
-8. **Structured output.** Responses must be JSON matching Pydantic schemas. Invalid output triggers up to two corrective retries that include the validation error; after that the user sees a clear error (overview categories fail independently and can be retried).
+8. **Structured output.** Responses must be JSON matching Pydantic schemas. Invalid output triggers up to two corrective retries that include the validation error; after that the user sees a clear error (overview categories fail independently and can be retried). Requests are sent at most two at a time, busy answers from the provider (HTTP 429/5xx) are retried with growing waits, and any category that still fails gets one automatic re-try after a short pause — free AI tiers often turn away bursts.
 9. **Evidence enforcement.** `core/evidence.py` rejects citation IDs that weren't retrieved, hides overview findings with no valid citation, marks uncited answers as unverified, and runs a lexical support check — if a "clearly stated" claim shares little vocabulary with its cited text, it is downgraded to "unclear" with a note. This is a heuristic safety net, not proof of correctness, and the UI always lets you read the source.
 
 ## Evaluation methodology
@@ -189,7 +189,7 @@ python -m evaluation.evaluate --with-llm --json evaluation/results/run.json
 pytest
 ```
 
-82 tests cover: URL validation (localhost, private ranges, cloud metadata IP, IPv6-mapped loopback, non-standard ports, credentials in URLs), redirect re-validation, size/timeout/content-type limits, HTML cleanup, heading detection, deterministic chunk IDs, FAISS retrieval (with the real MiniLM model when available), citation validation, evidence downgrades, JSON retry logic, provider compatibility (rejected JSON mode or temperature, bad keys, unknown models, rate limits) through the real OpenAI client and a mock HTTP transport, isolation of failing overview categories, prompt-injection attempts in policy text, and end-to-end UI flows via Streamlit `AppTest` (demo without a key, demo + chat with a scripted LLM, reset, malformed input). Unit tests use a scripted LLM backend; nothing calls a real AI provider.
+86 tests cover: URL validation (localhost, private ranges, cloud metadata IP, IPv6-mapped loopback, non-standard ports, credentials in URLs), redirect re-validation, size/timeout/content-type limits, HTML cleanup, heading detection, deterministic chunk IDs, FAISS retrieval (with the real MiniLM model when available), citation validation, evidence downgrades, JSON retry logic, provider compatibility (rejected JSON mode or temperature, bad keys, unknown models, rate limits) through the real OpenAI client and a mock HTTP transport, isolation of failing overview categories, prompt-injection attempts in policy text, and end-to-end UI flows via Streamlit `AppTest` (demo without a key, demo + chat with a scripted LLM, reset, malformed input). Unit tests use a scripted LLM backend; nothing calls a real AI provider.
 
 ## Security
 

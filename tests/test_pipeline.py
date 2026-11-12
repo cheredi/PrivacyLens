@@ -74,7 +74,7 @@ def test_overview_runs_all_categories_and_survives_failures(sample_policy):
                                          "source_ids": ids[:1]}]})
 
     backend = FakeBackend([respond] * 20)
-    overview = analyze_policy(sample_policy, LLMClient(backend, max_retries=1), max_workers=1)
+    overview = analyze_policy(sample_policy, LLMClient(backend, max_retries=1), max_workers=1, retry_pause_s=0)
     assert [c.category.value for c in overview.categories] == [
         "Data Collection", "Data Usage", "Data Sharing", "Data Retention", "User Rights and Choices"]
     usage = overview.categories[1]
@@ -122,3 +122,25 @@ def test_injected_ids_are_rejected_and_system_prompt_warns(embedder, settings):
 def test_empty_question_rejected(sample_policy):
     with pytest.raises(ValueError):
         answer_question(sample_policy, "   ", LLMClient(FakeBackend([])))
+
+
+def test_failed_category_is_retried_once_automatically(sample_policy):
+    from core.llm import LLMError
+
+    state = {"usage_failures": 0}
+
+    def respond(messages):
+        category = re.search(r"Category: (.+)", messages[1]["content"]).group(1)
+        if category == "Data Usage" and state["usage_failures"] == 0:
+            state["usage_failures"] += 1
+            raise LLMError("The AI service is temporarily busy or unavailable (HTTP 503).")
+        ids = _ids_in(messages)
+        return json.dumps({"category": category, "summary": "Summary.", "evidence_status": "unclear",
+                           "findings": [{"category": category, "finding": "The policy describes this practice.",
+                                         "plain_language_explanation": "Plain.", "evidence_status": "unclear",
+                                         "source_ids": ids[:1]}]})
+
+    backend = FakeBackend([respond] * 10)
+    overview = analyze_policy(sample_policy, LLMClient(backend, max_retries=0), retry_pause_s=0)
+    assert all(c.error is None for c in overview.categories)
+    assert len(backend.calls) == 6  # five categories + one automatic retry

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import time
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -84,9 +85,20 @@ def analyze_category(policy: ProcessedPolicy, category: str, llm: LLMClient, set
 
 
 def analyze_policy(policy: ProcessedPolicy, llm: LLMClient, settings: Settings | None = None,
-                   max_workers: int = 5) -> PolicyOverview:
-    """Run the five category analyses in parallel. Individual failures don't abort the rest."""
+                   max_workers: int | None = None, retry_pause_s: float | None = None) -> PolicyOverview:
+    """Analyse the five categories a few at a time. Individual failures don't abort the rest.
+
+    Categories that still fail (typically a provider "busy" answer) get one more, sequential
+    attempt after a short pause, so a brief outage rarely reaches the user.
+    """
     settings = settings or get_settings()
-    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+    workers = max_workers or settings.llm_max_concurrency
+    pause = settings.category_retry_pause_s if retry_pause_s is None else retry_pause_s
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(lambda c: analyze_category(policy, c, llm, settings), CATEGORIES))
+    failed = [i for i, r in enumerate(results) if r.error]
+    if failed:
+        time.sleep(pause)
+        for i in failed:
+            results[i] = analyze_category(policy, CATEGORIES[i], llm, settings)
     return PolicyOverview(categories=results)

@@ -106,3 +106,30 @@ def test_pasted_settings_are_cleaned(monkeypatch):
     s = Settings()
     assert s.openai_base_url == "https://generativelanguage.googleapis.com/v1beta/openai/"
     assert s.openai_model == "gemini-3.5-flash-lite"
+
+
+def test_busy_503_is_retried_then_succeeds():
+    calls = {"n": 0}
+
+    def handler(body):
+        calls["n"] += 1
+        return _error(503, "The model is overloaded.") if calls["n"] == 1 else httpx.Response(200, json=OK_BODY)
+
+    backend, sent = _backend(handler)
+    from openai import OpenAI
+
+    backend._client = OpenAI(api_key="test", base_url="https://llm.test/v1", max_retries=2,
+                             http_client=httpx.Client(transport=httpx.MockTransport(lambda r: (sent.append(1), handler(json.loads(r.content)))[1])))
+    assert backend.complete([{"role": "user", "content": "q"}]) == '{"answer": "ok"}'
+    assert calls["n"] == 2
+
+
+def test_persistent_503_gives_a_busy_message_not_a_settings_error():
+    backend, _ = _backend(lambda body: _error(503, "The model is overloaded."))
+    with pytest.raises(LLMError, match="temporarily busy or unavailable \\(HTTP 503\\)"):
+        backend.complete([{"role": "user", "content": "q"}])
+
+
+def test_default_settings_send_requests_gently():
+    s = Settings(openai_api_key=None)
+    assert s.llm_max_concurrency <= 2 and s.llm_network_retries >= 3

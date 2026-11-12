@@ -51,6 +51,11 @@ class Settings:
     openai_temperature: str = field(default_factory=lambda: _read_setting("OPENAI_TEMPERATURE", "0") or "")
     llm_timeout_s: float = 60.0
     llm_max_retries: int = 2  # extra attempts after the first when JSON is invalid
+    # Free AI tiers often answer "busy" (429/5xx) to bursts. Requests are sent at most this many at a
+    # time, and the client retries busy answers with growing waits before giving up.
+    llm_max_concurrency: int = 2
+    llm_network_retries: int = 4
+    category_retry_pause_s: float = 4.0  # pause before one automatic re-try of failed categories
 
     # Embeddings / retrieval
     embedding_model: str = field(

@@ -38,7 +38,7 @@ class OpenAIBackend:
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url or None,
             timeout=settings.llm_timeout_s,
-            max_retries=2,  # network-level retries (rate limits, 5xx)
+            max_retries=settings.llm_network_retries,  # SDK retries 408/409/429/5xx with growing backoff
         )
         self.model = settings.openai_model
         self.base_url = settings.openai_base_url or "https://api.openai.com/v1"
@@ -89,6 +89,11 @@ class OpenAIBackend:
                 ) from exc
             except openai.RateLimitError as exc:
                 raise LLMError("The AI service is rate-limited or out of quota. Please try again shortly.") from exc
+            except openai.InternalServerError as exc:
+                raise LLMError(
+                    f"The AI service is temporarily busy or unavailable (HTTP {exc.status_code}). "
+                    "This is on the provider's side, not your settings. Wait a few seconds and retry."
+                ) from exc
             except openai.APITimeoutError as exc:
                 raise LLMError("The AI service timed out. Please try again.") from exc
             except openai.APIError as exc:
